@@ -1,5 +1,5 @@
-name: 'Yamlr Manifest Audit & GitOps Auto-Healer'
-description: 'Fast, comment-preserving Kubernetes manifest auditing, canonical formatting, and auto-repair.'
+name: 'Yamlr: The Kubernetes Configuration Resolution Plane'
+description: 'Reconcile and repair Kubernetes configurations before deployment.'
 author: 'Yamlr / Timonel Labs'
 branding:
   icon: 'shield'

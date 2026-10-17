@@ -1,8 +1,8 @@
-# Yamlr GitHub Action
+# Yamlr: The Kubernetes Configuration Resolution Plane
 
-Official GitHub Action for [Yamlr](https://yamlr.dev) — the autonomous Kubernetes manifest resolution and auto-healing engine.
+> Reconcile and repair Kubernetes configurations before deployment.
 
-Runs high-speed, offline schema validation and safe comment-preserving auto-repairs directly inside your GitHub Actions workflows.
+Official GitHub Action for [Yamlr](https://yamlr.dev). Runs high-speed schema validation, dependency reconciliation, and comment-preserving repairs directly inside your GitHub Actions workflows.
 
 ---
 
