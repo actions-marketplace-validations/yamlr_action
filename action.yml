@@ -1,0 +1,82 @@
+name: 'Yamlr Manifest Audit & GitOps Auto-Healer'
+description: 'Fast, comment-preserving Kubernetes manifest auditing, canonical formatting, and auto-repair.'
+author: 'Yamlr / Timonel Labs'
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  path:
+    description: 'Path to Kubernetes manifests'
+    required: false
+    default: '.'
+  command:
+    description: 'Execution mode: scan, heal, fmt, or diff'
+    required: false
+    default: 'scan'
+  k8s-version:
+    description: 'Target Kubernetes version (e.g., 1.30)'
+    required: false
+  apply:
+    description: 'Automatically apply suggested fixes in-place'
+    required: false
+    default: 'false'
+  fail-on:
+    description: 'Exit with failure if errors or warnings detected: error, warning'
+    required: false
+    default: 'error'
+  output:
+    description: 'Output format: human, sarif, or json'
+    required: false
+    default: 'human'
+  version:
+    description: 'Yamlr version tag to install'
+    required: false
+    default: 'v0.1.0'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Yamlr Native Binary
+      shell: bash
+      env:
+        YAMLR_VERSION: ${{ inputs.version }}
+      run: |
+        BIN_DIR="$HOME/.local/bin"
+        mkdir -p "$BIN_DIR"
+        
+        # Download and install Yamlr native binary from the official high-speed CDN
+        curl -fsSL https://get.yamlr.dev/install.sh | YAMLR_INSTALL_DIR="$BIN_DIR" YAMLR_VERSION="$YAMLR_VERSION" bash
+        
+        echo "$BIN_DIR" >> "$GITHUB_PATH"
+
+    - name: Execute Yamlr Engine
+      shell: bash
+      env:
+        YAMLR_COMMAND: ${{ inputs.command }}
+        YAMLR_PATH: ${{ inputs.path }}
+        YAMLR_APPLY: ${{ inputs.apply }}
+        YAMLR_FAIL_ON: ${{ inputs.fail-on }}
+        YAMLR_OUTPUT: ${{ inputs.output }}
+        YAMLR_K8S_VERSION: ${{ inputs.k8s-version }}
+      run: |
+        CMD=(yamlr "$YAMLR_COMMAND" "$YAMLR_PATH")
+        
+        if [ "$YAMLR_COMMAND" = "heal" ] && [ "$YAMLR_APPLY" = "true" ]; then
+          CMD+=(--apply)
+        fi
+
+        if [ "$YAMLR_COMMAND" = "scan" ] && [ -n "$YAMLR_FAIL_ON" ]; then
+          CMD+=(--fail-on "$YAMLR_FAIL_ON")
+        fi
+
+        if [ -n "$YAMLR_OUTPUT" ] && [ "$YAMLR_OUTPUT" != "human" ]; then
+          CMD+=(--output "$YAMLR_OUTPUT")
+        fi
+
+        if [ -n "$YAMLR_K8S_VERSION" ]; then
+          CMD+=(--k8s-version "$YAMLR_K8S_VERSION")
+        fi
+
+        echo "Executing: ${CMD[*]}"
+        "${CMD[@]}"
